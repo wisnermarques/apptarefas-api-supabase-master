@@ -27,13 +27,7 @@ class HomePageState extends State<HomePage> {
     final tarefas = await _viewModel.getTarefa();
     if (mounted) {
       setState(() {
-        _tarefas = tarefas
-          ..removeWhere((t) => t.dataInicio == null || t.dataFim == null)
-          ..sort((a, b) {
-            final dataA = a.dataInicio ?? DateTime(2100);
-            final dataB = b.dataInicio ?? DateTime(2100);
-            return dataA.compareTo(dataB);
-          });
+        _tarefas = tarefas;
       });
     }
   }
@@ -123,6 +117,7 @@ class HomePageState extends State<HomePage> {
                               color: Colors.teal,
                             ),
                           ),
+                          Text('Responsável: ${tarefa.pessoa?.nome ?? 'Não informado'}'),
                           const SizedBox(height: 8),
                           Text('Descrição: ${tarefa.descricao}'),
                           const SizedBox(height: 8),

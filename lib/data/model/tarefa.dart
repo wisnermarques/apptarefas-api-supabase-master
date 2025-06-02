@@ -1,34 +1,38 @@
+import 'pessoa.dart';
+
 class Tarefa {
   final int? id;
   final String nome;
   final String descricao;
   final String status;
-  final DateTime? dataInicio; // Alterado para DateTime
-  final DateTime? dataFim; // Alterado para DateTime
+  final DateTime? dataInicio;
+  final DateTime? dataFim;
+  final int? idPessoa;
+  final Pessoa? pessoa; // 👈 Adicionado!
 
   Tarefa({
     this.id,
     required this.nome,
-    this.descricao = '', // Valor padrão para descrição
+    this.descricao = '',
     required this.status,
-    this.dataInicio, // Agora pode ser null
-    this.dataFim, // Agora pode ser null
+    this.dataInicio,
+    this.dataFim,
+    this.idPessoa,
+    this.pessoa,
   });
 
-  // Converte para Map (útil para operações com Supabase)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'nome': nome,
       'descricao': descricao,
       'status': status,
-      'data_inicio':
-          dataInicio?.toIso8601String(), // Convertendo para ISO String
-      'data_fim': dataFim?.toIso8601String(), // Convertendo para ISO String
+      'data_inicio': dataInicio?.toIso8601String(),
+      'data_fim': dataFim?.toIso8601String(),
+      'id_pessoa': idPessoa,
     };
   }
 
-  // Factory method para criar a partir de um Map (útil para leitura do Supabase)
   factory Tarefa.fromMap(Map<String, dynamic> map) {
     return Tarefa(
       id: map['id'] as int?,
@@ -41,6 +45,8 @@ class Tarefa {
       dataFim: map['data_fim'] != null
           ? DateTime.parse(map['data_fim'] as String)
           : null,
+      idPessoa: map['id_pessoa'] as int?,
+      pessoa: map['pessoa'] != null ? Pessoa.fromMap(map['pessoa']) : null,
     );
   }
 }

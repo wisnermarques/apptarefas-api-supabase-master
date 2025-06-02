@@ -14,8 +14,8 @@ class TarefaRepository {
     try {
       final response = await SupabaseHelper.client
           .from('tarefas')
-          .select()
-          .order('data_inicio', ascending: true);
+          .select('*, pessoa(*)') // 👈 Faz o JOIN!
+          .order('data_inicio', ascending: false);
 
       return (response as List).map((item) => Tarefa.fromMap(item)).toList();
     } catch (e) {
@@ -36,7 +36,7 @@ class TarefaRepository {
 
   Future<void> deleteTarefa(int id) async {
     try {
-      await SupabaseHelper.client.from('tarefa').delete().eq('id', id);
+      await SupabaseHelper.client.from('tarefas').delete().eq('id', id);
     } catch (e) {
       throw Exception('Erro ao deletar tarefa: $e');
     }
