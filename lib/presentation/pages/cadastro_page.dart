@@ -249,7 +249,7 @@ class _CadastroTarefaState extends State<CadastroTarefa> {
                       DropdownButtonFormField<Pessoa>(
                         value: _pessoaSelecionada,
                         decoration: InputDecoration(
-                          labelText: 'Usuário',
+                          labelText: 'REsponsável',
                           labelStyle: TextStyle(color: Colors.teal.shade700),
                           border: const OutlineInputBorder(),
                         ),
