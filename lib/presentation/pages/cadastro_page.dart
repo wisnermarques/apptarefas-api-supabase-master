@@ -1,9 +1,12 @@
 import 'package:app_gerenciamento_de_tarefas/data/repository/tarefa_repository.dart';
+import 'package:app_gerenciamento_de_tarefas/presentation/viewmodel/pessoa_viewmodel.dart';
 import 'package:app_gerenciamento_de_tarefas/presentation/viewmodel/tarefa_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/model/pessoa.dart';
 import '../../data/model/tarefa.dart';
+import '../../data/repository/pessoa_repository.dart';
 
 class CadastroTarefa extends StatefulWidget {
   const CadastroTarefa({super.key});
@@ -19,7 +22,10 @@ class _CadastroTarefaState extends State<CadastroTarefa> {
   final dataInicioController = TextEditingController();
   final dataFimController = TextEditingController();
   final TarefaViewmodel _viewModel = TarefaViewmodel(TarefaRepository());
+  final PessoaViewmodel _viewModelPessoa = PessoaViewmodel(PessoaRepository());
   String _status = 'Pendente'; // Valor padrão para o status
+  Pessoa? _pessoaSelecionada;
+  List<Pessoa> _pessoas = [];
 
   // Método para salvar a tarefa
   Future<void> saveTarefa() async {
@@ -35,12 +41,12 @@ class _CadastroTarefaState extends State<CadastroTarefa> {
             : null;
 
         final tarefa = Tarefa(
-          nome: nomeController.text,
-          descricao: descricaoController.text,
-          status: _status,
-          dataInicio: dataInicio,
-          dataFim: dataFim,
-        );
+            nome: nomeController.text,
+            descricao: descricaoController.text,
+            status: _status,
+            dataInicio: dataInicio,
+            dataFim: dataFim,
+            idPessoa: _pessoaSelecionada?.id);
 
         await _viewModel.addTarefa(tarefa);
 
@@ -96,6 +102,21 @@ class _CadastroTarefaState extends State<CadastroTarefa> {
         controller.text = DateFormat('dd/MM/yyyy').format(pickedDate);
       });
     }
+  }
+
+  Future<void> carregarPessoas() async {
+    final pessoas = await _viewModelPessoa.getPessoa();
+    if (mounted) {
+      setState(() {
+        _pessoas = pessoas;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    carregarPessoas();
   }
 
   @override
@@ -167,7 +188,7 @@ class _CadastroTarefaState extends State<CadastroTarefa> {
                           labelStyle: TextStyle(color: Colors.teal.shade700),
                           border: const OutlineInputBorder(),
                         ),
-                        items: ['Pendente', 'Em Progresso', 'Concluída']
+                        items: ['Pendente', 'Em andamento', 'Concluída']
                             .map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -224,6 +245,33 @@ class _CadastroTarefaState extends State<CadastroTarefa> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<Pessoa>(
+                        value: _pessoaSelecionada,
+                        decoration: InputDecoration(
+                          labelText: 'Usuário',
+                          labelStyle: TextStyle(color: Colors.teal.shade700),
+                          border: const OutlineInputBorder(),
+                        ),
+                        items: _pessoas.map((Pessoa pessoa) {
+                          return DropdownMenuItem<Pessoa>(
+                            value: pessoa,
+                            child: Text(pessoa.nome),
+                          );
+                        }).toList(),
+                        onChanged: (Pessoa? novaPessoa) {
+                          setState(() {
+                            _pessoaSelecionada = novaPessoa;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Por favor selecione um usuário';
+                          }
+                          return null;
+                        },
+                      ),
+
                       const SizedBox(height: 30),
                       // Botão de Salvar
                       ElevatedButton.icon(

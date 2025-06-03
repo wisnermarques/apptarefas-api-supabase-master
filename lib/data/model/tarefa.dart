@@ -22,15 +22,20 @@ class Tarefa {
   });
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
+    final  Map<String, dynamic> map = <String, dynamic>{
       'nome': nome,
       'descricao': descricao,
       'status': status,
       'data_inicio': dataInicio?.toIso8601String(),
       'data_fim': dataFim?.toIso8601String(),
-      'id_pessoa': idPessoa,
+      'id_pessoa': idPessoa
     };
+
+    if (id != null) {
+      map['id'] = id; // ✅ Agora funciona, porque map aceita dynamic
+    }
+
+    return map;
   }
 
   factory Tarefa.fromMap(Map<String, dynamic> map) {
