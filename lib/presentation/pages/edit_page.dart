@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../data/model/pessoa.dart';
 import '../../data/model/tarefa.dart';
+import '../../data/repository/pessoa_repository.dart';
 import '../../data/repository/tarefa_repository.dart';
+import '../viewmodel/pessoa_viewmodel.dart';
 import '../viewmodel/tarefa_viewmodel.dart';
 
 class EditTarefaPage extends StatefulWidget {
@@ -20,14 +23,17 @@ class _EditTarefaPageState extends State<EditTarefaPage> {
   late TextEditingController dataInicioController;
   late TextEditingController dataFimController;
   final TarefaViewmodel _viewModel = TarefaViewmodel(TarefaRepository());
+  final PessoaViewmodel _viewModelPessoa = PessoaViewmodel(PessoaRepository());
   late String _status;
+  Pessoa? _pessoaSelecionada;
+  List<Pessoa> _pessoas = [];
 
   @override
   void initState() {
     super.initState();
     nomeController = TextEditingController(text: widget.tarefa.nome);
     descricaoController = TextEditingController(text: widget.tarefa.descricao);
-
+    _pessoaSelecionada = widget.tarefa.pessoa;
     // Inicializa os controladores de data
     dataInicioController = TextEditingController(
         text: widget.tarefa.dataInicio != null
@@ -40,6 +46,8 @@ class _EditTarefaPageState extends State<EditTarefaPage> {
             : '');
 
     _status = widget.tarefa.status;
+
+    carregarPessoas();
   }
 
   @override
@@ -49,6 +57,15 @@ class _EditTarefaPageState extends State<EditTarefaPage> {
     dataInicioController.dispose();
     dataFimController.dispose();
     super.dispose();
+  }
+
+  Future<void> carregarPessoas() async {
+    final pessoas = await _viewModelPessoa.getPessoa();
+    if (mounted) {
+      setState(() {
+        _pessoas = pessoas;
+      });
+    }
   }
 
   Future<void> saveEdits() async {
@@ -65,13 +82,13 @@ class _EditTarefaPageState extends State<EditTarefaPage> {
       }
 
       final updatedTarefa = Tarefa(
-        id: widget.tarefa.id,
-        nome: nomeController.text,
-        descricao: descricaoController.text,
-        status: _status,
-        dataInicio: dataInicio,
-        dataFim: dataFim,
-      );
+          id: widget.tarefa.id,
+          nome: nomeController.text,
+          descricao: descricaoController.text,
+          status: _status,
+          dataInicio: dataInicio,
+          dataFim: dataFim,
+          idPessoa: _pessoaSelecionada!.id);
 
       try {
         await _viewModel.updateTarefa(updatedTarefa);
@@ -247,6 +264,33 @@ class _EditTarefaPageState extends State<EditTarefaPage> {
                             _selectDate(context, dataFimController),
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<int>(
+                    value: _pessoaSelecionada?.id,
+                    decoration: InputDecoration(
+                      labelText: 'Usuário',
+                      labelStyle: TextStyle(color: Colors.teal.shade700),
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: _pessoas.map((Pessoa pessoa) {
+                      return DropdownMenuItem<int>(
+                        value: pessoa.id,
+                        child: Text(pessoa.nome),
+                      );
+                    }).toList(),
+                    onChanged: (int? novoId) {
+                      setState(() {
+                        _pessoaSelecionada =
+                            _pessoas.firstWhere((p) => p.id == novoId);
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Por favor selecione um usuário';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 30),
                   ElevatedButton.icon(
